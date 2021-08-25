@@ -17,7 +17,7 @@ app.get('/weather', (request, response) => {
   //searches for the city where the city_name matches the search query
 
   if (cityObject){
-    const weatherArray = cityObject.data.map(day => new Forecast(day));
+    const weatherArray = cityObject.data.map(day => new Forecast(day.valid_date, day.weather.description));
     response.status(200).send(weatherArray);
   } else {
     response.status(500).send('no city found');
@@ -25,11 +25,13 @@ app.get('/weather', (request, response) => {
   //passes in the found city (cityObject) and if it exists, it will construct a new instance of forecast which returns the info we need.  If the city isn't fouund from our find method above, it will return an error message.
 });
 
-function Forecast(day){
+class Forecast{
   //create properties for class (Forecast)
-  this.date = day.valid_date;
-  this.description = day.weather.description;
-}
+  constructor(date, description){
+    this.date = date;
+    this.description = description;
+  }
+};
 //functional class that changes the shape of the city object data, by giving it date and description properties.
 
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
