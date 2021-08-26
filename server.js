@@ -10,21 +10,19 @@ app.use(cors());
 //allows us to let our front end talk to our back end.
 
 app.get('/movies', async (request, response) => {
-  let searchQuery = 'seattle';
+  let searchQuery = request.query.searchQuery;
   const movieKey = process.env.MOVIE_API_KEY;
   let movieAPI_URL = `https://api.themoviedb.org/3/search/movie?api_key=${movieKey}&query=${searchQuery}`;
-  let movieResponse = await axios.get(movieAPI_URL);
-  console.log(movieResponse);
-  response.status(200).send(movieResponse);
-  // try{
-  //   let movieResponse = await axios.get(movieAPI_URL);
-  //   console.log(movieResponse.results);
-  //   // const movieArr = movieResponse.data.data.map(day => new Forecast(day));
-    // response.status(200).send('hello');
-  // } catch (error) {
-  //   response.status(500).send('no movies :(');
-  // }
-})
+
+  try{
+    let movieResponse = await axios.get(movieAPI_URL);
+    const movieArr = movieResponse.data.results.map(movie => new Movie(movie));
+    response.status(200).send(movieArr);
+    console.log(movieArr);
+  } catch (error) {
+    response.status(500).send('no movies!');
+  }
+});
 
 app.get('/weather', async (request, response) => {
   let lat = request.query.lat;
@@ -54,7 +52,19 @@ class Forecast{
     this.minTemp = day.min_temp;
     this.maxTemp = day.max_temp;
   }
-};
-//functional class that changes the shape of the city object data, by giving it date and description properties.
+}
+//class that changes the shape of the city object data, by giving it date and description properties.
+
+class Movie{
+  constructor(movie){
+    this.title = movie.title;
+    this.description = movie.overview;
+    this.avgVote = movie.vote_average;
+    this.totalVote = movie.vote_count;
+    this.imageURL = movie.poster_path;
+    this.popularity = movie.popularity;
+    this.release = movie.release_date;
+  }
+}
 
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
