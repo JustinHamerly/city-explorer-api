@@ -1,16 +1,32 @@
 const axios = require('axios');
+const cache = require('../cache');
 
 async function getWeather (request, response) {
+  const weatherKey = process.env.WEATHER_API_KEY;
   let lat = request.query.lat;
   let lon = request.query.lon;
-  //create a variable to save query parameters from request body from react
-  const weatherKey = process.env.WEATHER_API_KEY;
+
+  const wKey = 'weatherLAT'+lat+'LON'+lon;
+
+  // console.log((new Date(Date.now())).toDateString());
+
   let weatherAPI_URL = `http://api.weatherbit.io/v2.0/forecast/daily?key=${weatherKey}&lat=${lat}&lon=${lon}&days=5&format=json`;
-  // const cityObject = weatherData.find(city => city.city_name.toLowerCase() === searchQuery.toLowerCase());
-  //searches for the city where the city_name matches the search query
+
+  if (cache[wKey] && (Date.now() - cache[wKey].timestamp < 500000)){
+    console.log('weather Cache hit');
+  } else {
+    console.log('weather Cache miss');
+    try{
+      cache[wKey] = {};
+      cache[wKey].timestamp = Date.now();
+      cache[wKey].data = await axios.get(weatherAPI_URL);
+    } catch (error) {
+      cache[wKey] = undefined;
+    }
+  }
 
   try{
-    let weatherResponse = await axios.get(weatherAPI_URL);
+    let weatherResponse = cache[wKey].data;
     const weatherArr = weatherResponse.data.data.map(day => new Forecast(day));
     // const weatherArray = cityObject.data.map(day => new Forecast(day.valid_date, day.weather.description, day.min_temp, day.max+temp));
     response.status(200).send(weatherArr);
