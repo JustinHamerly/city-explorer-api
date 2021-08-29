@@ -1,11 +1,15 @@
+'use strict';
+
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv').config();
-const { getWeather } = require('./weatherFetch');
-const { getMovies } = require('./movieFetch');
-const axios = require('axios');
+
+
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+const { getWeather } = require('./modules/weatherFetch');
+const { getMovies } = require('./modules/movieFetch');
 
 app.use(cors());
 //allows us to let our front end talk to our back end.
